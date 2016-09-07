@@ -1,16 +1,20 @@
 
 CXX=clang++
-CXXFLAGS= -I/Users/byul/code/SC3/sources/supercollider/include/server -I/Users/byul/code/SC3/sources/supercollider/include/common/
+CXXFLAGS= -I/Users/byul/code/SC3/sources/supercollider/include/server -I/Users/byul/code/SC3/sources/supercollider/include/common/ -I/Users/byul/code/SC3/sources/supercollider/include/plugin_interface 
 
 # TARGET = libshm_interface.dylib
-TARGET = libscsynth_add.dylib
+LIBSCSYNTH_ADD = libscsynth_add.dylib
+CHECK_UPDATE = check_update
 OBJ = scsynth_add.o
 
-all : $(TARGET)
+all : $(LIBSCSYNTH_ADD) $(CHECK_UPDATE)
 
-$(TARGET) : $(OBJ)
-	$(CXX) -shared -o $(TARGET) $(OBJ) -L./ -lscsynth.1.0.0
-	install_name_tool -change libscsynth.1.0.0.dylib `pwd`/libscsynth.1.0.0.dylib $(TARGET)
+$(LIBSCSYNTH_ADD) : $(OBJ)
+	$(CXX) -shared -o $@ $(OBJ) -L./ -lscsynth.1.0.0
+	install_name_tool -change libscsynth.1.0.0.dylib `pwd`/libscsynth.1.0.0.dylib $@
+
+$(CHECK_UPDATE) :check_update.cpp
+	$(CXX) -o $@ check_update.cpp $(CXXFLAGS)
 
 clean :
-	rm $(TARGET) $(OBJ)
+	rm $(LIBSCSYNTH_ADD) $(OBJ) $(CHECK_UPDATE)
