@@ -137,9 +137,8 @@
        num-control-bus-channels (server-options-num-control-bus ,server-options)
        buf-length (server-options-block-size ,server-options)
        realtime-memory-size (server-options-realtime-mem-size ,server-options)
-       ;; num-shared-controls 0
-       ;; shared-controls (cffi:null-pointer)
-       ;; shared-memory-id (cffi:foreign-funcall "getpid" :int)
+       num-shared-controls 0
+       shared-controls (cffi:null-pointer)
        real-time 1
        memory-locking 0
        non-realtime-cmd-filename (cffi-sys:null-pointer)
@@ -159,7 +158,8 @@
        ugens-plugin-path (alexandria:if-let ((plugin-path (format nil "~{~a~^:~}" (server-options-ugen-plugins-path ,server-options))))
 			   plugin-path (cffi-sys:null-pointer))
        out-device-name (cffi-sys:null-pointer)
-       restricted-path (cffi-sys:null-pointer))
+       restricted-path (cffi-sys:null-pointer)
+       shared-memory-id 0)
      ,@body))
 
 
