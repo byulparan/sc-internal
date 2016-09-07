@@ -10,6 +10,14 @@ pthread_mutex_t mutex;
 pthread_cond_t read_condition_var;
 pthread_cond_t write_condition_var;
 
+extern "C" {
+  int sbcl_printf(const char*, va_list);
+  void communicate_init();
+  void communicate_dealloc();
+  void sbcl_reply_func(struct ReplyAddress*, char*, int);
+  struct World* make_world(struct WorldOptions*);
+}
+
 int sbcl_printf(const char *fmt, va_list ap) {
   vprintf(fmt, ap);
   fflush(stdout);

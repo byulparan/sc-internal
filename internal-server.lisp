@@ -6,8 +6,7 @@
   ((sc-world :initform nil :accessor sc-world)
    (sc-thread :initform nil :accessor sc-thread)
    (sc-reply-thread :initform nil :accessor sc-reply-thread)
-   (reply-handle-table :initform (make-hash-table :test #'equal) :reader reply-handle-table)
-   (shm-interface :initform nil :accessor shm-interface)))
+   (reply-handle-table :initform (make-hash-table :test #'equal) :reader reply-handle-table)))
 
 (defmethod is-local-p ((server internal-server))
   t)
@@ -51,10 +50,6 @@
 (defmethod uninstall-reply-responder ((rt-server internal-server) cmd-name)
   (setf (gethash cmd-name (reply-handle-table rt-server)) nil))
 
-(defmethod server-boot ((rt-server internal-server))
-  (call-next-method)
-  #+ccl
-  (setup-shm-interface rt-server (cffi:foreign-funcall "getpid" :int)))
 
 (defmethod bootup-server-process ((rt-server internal-server))
   (setf (sc-thread rt-server)
@@ -78,7 +73,6 @@
   (bt:join-thread (sc-reply-thread rt-server))
   (setf (sc-thread rt-server) nil
 	(sc-reply-thread rt-server) nil
-	(shm-interface rt-server) nil
 	(sc-world rt-server) nil))
 
 (defmethod send-message ((server internal-server) &rest msg)
@@ -91,18 +85,23 @@
     (cffi:with-pointer-to-vector-data (msg encode-msg)
       (world-send-packet (sc-world server) (length encode-msg) msg (cffi:foreign-symbol-pointer "sbcl_reply_func")))))
 
-(defmethod %buffer-data ((rt-server internal-server) buffer)
+
+(defun control-get-sync (index)
+  (cffi:with-foreign-slots ((control-bus) (sc-world *s*) (:struct world))
+    (cffi:mem-aref control-bus :float index)))
+
+(defun control-set-sync (index value)
+  (cffi:with-foreign-slots ((control-bus) (sc-world *s*) (:struct world))
+    (setf (cffi:mem-aref control-bus :float index) (coerce value 'single-float))))
+
+(defun buffer-data (buffer)
   (let* ((chanls (chanls buffer))
 	 (frames (frames buffer))
 	 (array (make-array (* chanls frames) :element-type 'single-float)))
     (cffi:with-pointer-to-vector-data (array-ptr array)
-      (cffi:with-foreign-objects ((change-p :char)
-				  (sndbuf '(:struct snd-buf)))
-	(memset sndbuf 0 (cffi:foreign-type-size '(:struct snd-buf)))
-	(cffi:with-foreign-slots ((samples data) sndbuf (:struct snd-buf))
-	  (setf samples (* chanls frames)
-		data array-ptr))
-	(world-copy-sndbuf (sc-world rt-server) (bufnum buffer) sndbuf 0 change-p)))
+      (cffi:with-foreign-slots ((snd-bufs) (sc-world *s*) (:struct world))
+	(let* ((data (getf (cffi:mem-aref snd-bufs '(:struct snd-buf) (bufnum buffer)) 'data)))
+	  (memcpy array-ptr data (* chanls frames)))))
     array))
 
 (defun make-internal-server (name server-options)
@@ -110,4 +109,4 @@
 		 :server-options server-options
 		 :name name))
 
-(export '(make-internal-server) :sc)
+(export '(make-internal-server control-get-sync control-set-sync buffer-data) :sc)

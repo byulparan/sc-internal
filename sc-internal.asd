@@ -1,6 +1,6 @@
 
 (asdf/defsystem:defsystem #:sc-internal
-  :depends-on (#:sc #:sc-shm-interface)
+  :depends-on (#:sc)
   :components ((:file "ffi-type")
 	       (:file "internal-server")))
 

@@ -1,6 +1,5 @@
 (in-package #:sc)
 #+ccl
-(load-shm-library)
 (cffi:load-foreign-library (su:cat (namestring (asdf/system:system-source-directory :sc-internal))
 				   "libscsynth_add.dylib"))
 
@@ -138,9 +137,9 @@
        num-control-bus-channels (server-options-num-control-bus ,server-options)
        buf-length (server-options-block-size ,server-options)
        realtime-memory-size (server-options-realtime-mem-size ,server-options)
-       num-shared-controls 0
-       shared-controls (cffi:null-pointer)
-       shared-memory-id (cffi:foreign-funcall "getpid" :int)
+       ;; num-shared-controls 0
+       ;; shared-controls (cffi:null-pointer)
+       ;; shared-memory-id (cffi:foreign-funcall "getpid" :int)
        real-time 1
        memory-locking 0
        non-realtime-cmd-filename (cffi-sys:null-pointer)
