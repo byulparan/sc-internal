@@ -101,7 +101,7 @@
     (cffi:with-pointer-to-vector-data (array-ptr array)
       (cffi:with-foreign-slots ((snd-bufs) (sc-world *s*) (:struct world))
 	(let* ((data (getf (cffi:mem-aref snd-bufs '(:struct snd-buf) (bufnum buffer)) 'data)))
-	  (memcpy array-ptr data (* chanls frames)))))
+	  (memcpy array-ptr data (* chanls frames (cffi:foreign-type-size :float))))))
     array))
 
 (defun make-internal-server (name server-options)
