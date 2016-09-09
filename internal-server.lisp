@@ -4,7 +4,6 @@
 
 (defclass internal-server (rt-server)
   ((sc-world :initform nil :accessor sc-world)
-   (sc-thread :initform nil :accessor sc-thread)
    (sc-reply-thread :initform nil :accessor sc-reply-thread)
    (reply-handle-table :initform (make-hash-table :test #'equal) :reader reply-handle-table)))
 
