@@ -104,7 +104,7 @@
 	  (memcpy array-ptr data (* chanls frames (cffi:foreign-type-size :float))))))
     array))
 
-(defun make-internal-server (name server-options)
+(defun make-internal-server (name &key (server-options (make-server-options)))
   (make-instance 'internal-server
 		 :server-options server-options
 		 :name name))
