@@ -171,7 +171,8 @@
   (options (:pointer (:struct world-options))))
 
 (cffi:defcfun ("World_WaitForQuit" world-wait-for-quit) :void
-  (world :pointer))
+  (world :pointer)
+  (unload-plugins :bool))
 
 (cffi:defcfun ("World_SendPacket" world-send-packet) :void
   (world :pointer)

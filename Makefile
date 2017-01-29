@@ -1,6 +1,6 @@
 
 CXX=clang++
-CXXFLAGS= -I/Users/byul/code/SC3/sources/supercollider/include/server -I/Users/byul/code/SC3/sources/supercollider/include/common/ -I/Users/byul/code/SC3/sources/supercollider/include/plugin_interface 
+CXXFLAGS= -I/Users/byul/code/supercollider/include/server -I/Users/byul/code/supercollider/include/common/ -I/Users/byul/code/supercollider/include/plugin_interface 
 
 # TARGET = libshm_interface.dylib
 LIBSCSYNTH_ADD = libscsynth_add.dylib

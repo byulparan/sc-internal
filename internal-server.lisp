@@ -62,8 +62,8 @@
 			  (set-print-func (cffi:foreign-symbol-pointer "sbcl_printf"))
 			  (with-server-options (options (server-options rt-server))
 			    (let ((world (make-world options)))
-			      (setf (sc-world rt-server) world)))
-			  (world-wait-for-quit (sc-world rt-server)))
+			      (setf (sc-world rt-server) world)
+			      (world-wait-for-quit (sc-world rt-server) t))))
 			:name "scsynth thread"))
   (thread-wait (lambda () (sc-world rt-server))))
 
