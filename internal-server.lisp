@@ -23,13 +23,15 @@
 	 (cffi:with-pointer-to-vector-data (size-ptr size)
 	   (unwind-protect 
 		(loop
-		  (let* ((result (#_read fd size-ptr 4)))
+		  (let* ((result (cffi:foreign-funcall "read" :int fd :pointer size-ptr :unsigned-long 4
+							      :unsigned-long)))
 		    (when (/= result -1)
 		      (assert (= result 4) nil "no invalid size_read..in screply_thread")
 		      (let* ((message-size (aref size 0)))
 			(assert (> 1024 message-size) nil
 				"too long response message size: ~d!" message-size)
-			(let ((result (#_read fd msg-ptr message-size)))
+			(let ((result (cffi:foreign-funcall "read" :int fd :pointer msg-ptr :unsigned-long message-size
+								   :unsigned-long)))
 			  (assert (= result message-size) nil "no invalid message read!..in screply_thread"))
 			(let* ((message (osc:decode-bundle msg))
 			       (handler (gethash (car message) (reply-handle-table *internal-server*))))
@@ -58,6 +60,8 @@
 			  (ccl:setenv "SC_SYNTHDEF_PATH" (su:full-pathname *sc-synthdefs-path*))
 			  #+sbcl
 			  (sb-posix:setenv "SC_SYNTHDEF_PATH" (su:full-pathname *sc-synthdefs-path*) 1)
+			  #+ecl
+			  (ext:setenv "SC_SYNTHDEF_PATH" (su:full-pathname *sc-synthdefs-path*))
 			  (setf (sc-reply-thread rt-server) (start-reply-handle-thread))
 			  (set-print-func (cffi:foreign-symbol-pointer "sbcl_printf"))
 			  (with-server-options (options (server-options rt-server))
