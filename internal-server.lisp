@@ -57,11 +57,11 @@
   (setf (sc-thread rt-server)
 	(bt:make-thread (lambda ()
 			  #+ccl
-			  (ccl:setenv "SC_SYNTHDEF_PATH" (su:full-pathname *sc-synthdefs-path*))
+			  (ccl:setenv "SC_SYNTHDEF_PATH" (full-pathname *sc-synthdefs-path*))
 			  #+sbcl
-			  (sb-posix:setenv "SC_SYNTHDEF_PATH" (su:full-pathname *sc-synthdefs-path*) 1)
+			  (sb-posix:setenv "SC_SYNTHDEF_PATH" (full-pathname *sc-synthdefs-path*) 1)
 			  #+ecl
-			  (ext:setenv "SC_SYNTHDEF_PATH" (su:full-pathname *sc-synthdefs-path*))
+			  (ext:setenv "SC_SYNTHDEF_PATH" (full-pathname *sc-synthdefs-path*))
 			  (setf (sc-reply-thread rt-server) (start-reply-handle-thread))
 			  (set-print-func (cffi:foreign-symbol-pointer "sbcl_printf"))
 			  (with-server-options (options (server-options rt-server))

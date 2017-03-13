@@ -1,17 +1,17 @@
 (in-package #:sc)
 
 #+ccl
-(cffi:load-foreign-library (su:cat (namestring (asdf/system:system-source-directory :sc-internal))
+(cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
 				   "libscsynth_add.dylib"))
 
 #+sbcl
 (sb-int:with-float-traps-masked (:invalid :divide-by-zero)
-  (cffi:load-foreign-library (su:cat (namestring (asdf/system:system-source-directory :sc-internal))
+  (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
 				   "libscsynth_add.dylib")))
 
 #+ecl
 (handler-case 
-    (cffi:load-foreign-library (su:cat (namestring (asdf/system:system-source-directory :sc-internal))
+    (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
 				       "libscsynth_add.dylib"))
   (error ()))
 
