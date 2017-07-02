@@ -19,10 +19,10 @@
        (cffi:foreign-funcall "communicate_init")
        (setf fd (cffi:mem-ref fd :int))
        (assert (/= -1 fd) nil "invalid fd...in screply_thread")
-       (cffi:with-pointer-to-vector-data (msg-ptr msg)
-	 (cffi:with-pointer-to-vector-data (size-ptr size)
-	   (unwind-protect 
-		(loop
+       (unwind-protect 
+	    (loop
+	      (cffi:with-pointer-to-vector-data (msg-ptr msg)
+		(cffi:with-pointer-to-vector-data (size-ptr size)
 		  (let* ((result (cffi:foreign-funcall "read" :int fd :pointer size-ptr :unsigned-long 4
 							      :unsigned-long)))
 		    (when (/= result -1)
@@ -37,8 +37,8 @@
 			       (handler (gethash (car message) (reply-handle-table *internal-server*))))
 			  (if handler (handler-case (apply handler (cdr message))
 					(error (c) (format t "~a --error in reply thread~%" c)))
-			    (format t "not found handle for: ~a~%" message)))))))
-	     (cffi:foreign-funcall "communicate_dealloc"))))))
+			    (format t "not found handle for: ~a~%" message)))))))))
+	 (cffi:foreign-funcall "communicate_dealloc"))))
    :name "screply thread"))
 
 (defmethod initialize-instance :before ((self internal-server) &key)
