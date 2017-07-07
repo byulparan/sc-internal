@@ -14,30 +14,29 @@
   (bt:make-thread
    (lambda ()
      (let ((fd (cffi:foreign-symbol-pointer "sc_fd"))
-	   (msg (make-array 1024 :element-type '(unsigned-byte 8)))
-	   (size (make-array 1 :element-type '(unsigned-byte 32))))
+	   (msg (make-array 1024 :element-type '(unsigned-byte 8))))
        (cffi:foreign-funcall "communicate_init")
        (setf fd (cffi:mem-ref fd :int))
        (assert (/= -1 fd) nil "invalid fd...in screply_thread")
        (unwind-protect 
 	    (loop
-	      (cffi:with-pointer-to-vector-data (msg-ptr msg)
-		(cffi:with-pointer-to-vector-data (size-ptr size)
-		  (let* ((result (cffi:foreign-funcall "read" :int fd :pointer size-ptr :unsigned-long 4
-							      :unsigned-long)))
-		    (when (/= result -1)
-		      (assert (= result 4) nil "no invalid size_read..in screply_thread")
-		      (let* ((message-size (aref size 0)))
-			(assert (> 1024 message-size) nil
-				"too long response message size: ~d!" message-size)
+	      (cffi:with-foreign-objects ((size-ptr :int))
+		(let* ((result (cffi:foreign-funcall "read" :int fd :pointer size-ptr :unsigned-long 4
+							    :unsigned-long)))
+		  (when (/= result -1)
+		    (assert (= result 4) nil "no invalid size_read..in screply_thread")
+		    (let* ((message-size (cffi:mem-ref size-ptr :int)))
+		      (assert (> 1024 message-size) nil
+			      "too long response message size: ~d!" message-size)
+		      (cffi:with-pointer-to-vector-data (msg-ptr msg)
 			(let ((result (cffi:foreign-funcall "read" :int fd :pointer msg-ptr :unsigned-long message-size
 								   :unsigned-long)))
-			  (assert (= result message-size) nil "no invalid message read!..in screply_thread"))
-			(let* ((message (osc:decode-bundle msg))
-			       (handler (gethash (car message) (reply-handle-table *internal-server*))))
-			  (if handler (handler-case (apply handler (cdr message))
-					(error (c) (format t "~a --error in reply thread~%" c)))
-			    (format t "not found handle for: ~a~%" message)))))))))
+			  (assert (= result message-size) nil "no invalid message read!..in screply_thread")))
+		      (let* ((message (osc:decode-bundle msg))
+			     (handler (gethash (car message) (reply-handle-table *internal-server*))))
+			(if handler (handler-case (apply handler (cdr message))
+				      (error (c) (format t "~a --error in reply thread~%" c)))
+			  (format t "not found handle for: ~a~%" message))))))))
 	 (cffi:foreign-funcall "communicate_dealloc"))))
    :name "screply thread"))
 
