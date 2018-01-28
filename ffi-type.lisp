@@ -5,9 +5,11 @@
 				   "libscsynth_add.dylib"))
 
 #+sbcl
-(sb-int:with-float-traps-masked (:invalid :divide-by-zero)
-  (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
-				   "libscsynth_add.dylib")))
+(trivial-main-thread:call-in-main-thread
+ (lambda ()
+   (sb-int:with-float-traps-masked (:invalid :divide-by-zero)
+     (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
+				     "libscsynth_add.dylib")))))
 
 #+ecl
 (handler-case 
