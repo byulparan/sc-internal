@@ -1,4 +1,4 @@
 *.dylib
 *.o
-check_update
 check_update.cpp
+
