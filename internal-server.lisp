@@ -36,7 +36,9 @@
 			     (handler (gethash (car message) (reply-handle-table *internal-server*))))
 			(if handler (handler-case (apply handler (cdr message))
 				      (error (c) (format t "~a --error in reply thread~%" c)))
-			  (format t "not found handle for: ~a~%" message))))))))
+			  (format t "not found handle for: ~a~%" message))
+			(unless (boot-p *internal-server*)
+			  (return))))))))
 	 (cffi:foreign-funcall "communicate_dealloc"))))
    :name "screply thread"))
 
@@ -72,7 +74,6 @@
 
 (defmethod cleanup-server ((rt-server internal-server))
   (bt:join-thread (sc-thread rt-server))
-  (bt:destroy-thread (sc-reply-thread rt-server))
   (bt:join-thread (sc-reply-thread rt-server))
   (setf (sc-thread rt-server) nil
 	(sc-reply-thread rt-server) nil
