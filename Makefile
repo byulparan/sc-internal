@@ -1,19 +1,15 @@
 CXX=clang++
-CXXFLAGS= -I/Users/byul/code/supercollider/include/server -I/Users/byul/code/supercollider/include/common/ -I/Users/byul/code/supercollider/include/plugin_interface -std=c++14
+CXXFLAGS= -I$(SC3_SRC)/include/server -I$(SC3_SRC)/include/common/ -I$(SC3_SRC)/include/plugin_interface -std=c++14
 
-# TARGET = libshm_interface.dylib
 LIBSCSYNTH_ADD = libscsynth_add.dylib
-CHECK_UPDATE = check_update
-OBJ = scsynth_add.o
 
-all : $(LIBSCSYNTH_ADD) $(CHECK_UPDATE)
+all : $(LIBSCSYNTH_ADD)
 
-$(LIBSCSYNTH_ADD) : $(OBJ)
-	$(CXX) -shared -o $@ $(OBJ) -L./ -lscsynth.1.0.0
-	rm $(OBJ)
-
-$(CHECK_UPDATE) :check_update.cpp
-	$(CXX) -o $@ check_update.cpp $(CXXFLAGS)
+$(LIBSCSYNTH_ADD) : scsynth_add.cpp
+ifndef SC3_SRC
+	$(error "You must set environment variable SC3_SRC") 
+endif 
+	$(CXX) -shared -o $@ scsynth_add.cpp -L./ -lscsynth.1.0.0 $(CXXFLAGS)
 
 clean :
-	rm $(LIBSCSYNTH_ADD) $(CHECK_UPDATE)
+	rm -f $(LIBSCSYNTH_ADD)
