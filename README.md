@@ -1,6 +1,6 @@
 # SC-INTERNAL
 
-A <a href="https://github.com/byulparan/cl-collider">cl-collider</a> extention library.  
+A extention library of <a href="https://github.com/byulparan/cl-collider">cl-collider</a>.  
 It's implementation to internal server of scsynth.
 
 ## Dependencies:
@@ -10,7 +10,7 @@ It's implementation to internal server of scsynth.
 
 ## Required:
 
-#### libscsynth and libscsynth_add   
+#### libscsynth / libscsynth_add   
   You need **`libscsynth`** as shared library. defaultly, SuperCollider application not provide it.  
   so you should be build manually it from SuperCollider sources.  
   
@@ -29,6 +29,7 @@ It's implementation to internal server of scsynth.
 ```
 	$ cd /path/to/sc-internal
 	$ cp /path/to/libscsynth .
+	$ export SC3_SRC=/path/to/directory_of_supercollider/
 	$ make
 ```
 
