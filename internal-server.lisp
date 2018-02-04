@@ -32,7 +32,7 @@
 			(let ((result (cffi:foreign-funcall "read" :int fd :pointer msg-ptr :unsigned-long message-size
 								   :unsigned-long)))
 			  (assert (= result message-size) nil "no invalid message read!..in screply_thread")))
-		      (let* ((message (osc:decode-bundle msg))
+		      (let* ((message (sc-osc::decode-bundle msg))
 			     (handler (gethash (car message) (reply-handle-table *internal-server*))))
 			(if handler (handler-case (apply handler (cdr message))
 				      (error (c) (format t "~a --error in reply thread~%" c)))
@@ -80,12 +80,12 @@
 	(sc-world rt-server) nil))
 
 (defmethod send-message ((server internal-server) &rest msg)
-  (let* ((encode-msg (apply #'osc:encode-message msg)))
+  (let* ((encode-msg (apply #'sc-osc::encode-message msg)))
     (cffi:with-pointer-to-vector-data (msg encode-msg)
       (world-send-packet (sc-world server) (length encode-msg) msg (cffi:foreign-symbol-pointer "sbcl_reply_func")))))
 
 (defmethod send-bundle ((server internal-server) time lists-of-messages)
-  (let* ((encode-msg (osc:encode-bundle lists-of-messages time)))
+  (let* ((encode-msg (sc-osc::encode-bundle lists-of-messages time)))
     (cffi:with-pointer-to-vector-data (msg encode-msg)
       (world-send-packet (sc-world server) (length encode-msg) msg (cffi:foreign-symbol-pointer "sbcl_reply_func")))))
 
