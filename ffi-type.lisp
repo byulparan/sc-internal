@@ -1,10 +1,13 @@
 (in-package #:sc)
 
 #+ccl
-(cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
-				   "libscsynth_add.dylib"))
+(progn
+  (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
+				  "libscsynth.1.0.0.dylib"))
+  (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
+				  "libscsynth_add.dylib")))
 
-#+sbcl ;; should be load libscsynth on main-thread
+#+Sbcl ;; should be load libscsynth on main-thread
 (let* ((sem (sb-thread:make-semaphore)))
   (sb-thread:interrupt-thread
    (sb-thread:main-thread)
