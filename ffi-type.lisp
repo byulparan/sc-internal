@@ -14,6 +14,8 @@
    (lambda ()
      (sb-int:with-float-traps-masked (:invalid :divide-by-zero)
        (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
+				       "libscsynth.1.0.0.dylib"))
+       (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
 				       "libscsynth_add.dylib"))
        (sb-thread:signal-semaphore sem))))
   (sb-thread:wait-on-semaphore sem))
