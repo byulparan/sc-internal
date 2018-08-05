@@ -4,42 +4,37 @@
 
 (defclass internal-server (rt-server)
   ((sc-world :initform nil :accessor sc-world)
+   (sc-buffer :initform (static-vectors:make-static-vector 1024 :initial-element 0) :reader sc-buffer)
    (sc-reply-thread :initform nil :accessor sc-reply-thread)
    (reply-handle-table :initform (make-hash-table :test #'equal) :reader reply-handle-table)))
 
 (defmethod is-local-p ((server internal-server))
   t)
 
+(defmacro with-sbcl-lock (&body body)
+  `(unwind-protect (progn
+		     (cffi:foreign-funcall "sbcl_lock")
+		     ,@body)
+     (cffi:foreign-funcall "sbcl_unlock")))
+
 (defun start-reply-handle-thread ()
+  (cffi:foreign-funcall "communicate_init" :pointer (static-vectors:static-vector-pointer (sc-buffer *s*)))
   (bt:make-thread
    (lambda ()
-     (let ((fd (cffi:foreign-symbol-pointer "sc_fd"))
-	   (msg (make-array 1024 :element-type '(unsigned-byte 8))))
-       (cffi:foreign-funcall "communicate_init")
-       (setf fd (cffi:mem-ref fd :int))
-       (assert (/= -1 fd) nil "invalid fd...in screply_thread")
-       (unwind-protect 
-	    (loop
-	      (cffi:with-foreign-objects ((size-ptr :int))
-		(let* ((result (cffi:foreign-funcall "read" :int fd :pointer size-ptr :unsigned-long 4
-							    :unsigned-long)))
-		  (when (/= result -1)
-		    (assert (= result 4) nil "no invalid size_read..in screply_thread")
-		    (let* ((message-size (cffi:mem-ref size-ptr :int)))
-		      (assert (> 1024 message-size) nil
-			      "too long response message size: ~d!" message-size)
-		      (cffi:with-pointer-to-vector-data (msg-ptr msg)
-			(let ((result (cffi:foreign-funcall "read" :int fd :pointer msg-ptr :unsigned-long message-size
-								   :unsigned-long)))
-			  (assert (= result message-size) nil "no invalid message read!..in screply_thread")))
-		      (let* ((message (sc-osc::decode-bundle msg))
-			     (handler (gethash (car message) (reply-handle-table *internal-server*))))
-			(if handler (handler-case (apply handler (cdr message))
-				      (error (c) (format t "~a --error in reply thread~%" c)))
-			  (format t "not found handle for: ~a~%" message))
-			(unless (boot-p *internal-server*)
-			  (return))))))))
-	 (cffi:foreign-funcall "communicate_dealloc"))))
+     (let ((size-ptr (cffi:foreign-symbol-pointer "sbcl_message_size")))
+       (with-sbcl-lock
+	 (loop
+	   (cffi:foreign-funcall "sbcl_wait_signal")
+	   (let ((size (cffi:mem-ref size-ptr :int)))
+	     (unless (zerop size)
+	       (let* ((message (sc-osc::decode-bundle (sc-buffer *s*)))
+		      (handler (gethash (car message) (reply-handle-table *internal-server*))))
+		 (if handler (handler-case (apply handler (cdr message))
+			       (error (c) (format t "~a --error in reply thread~%" c)))
+		   (format t "not found handle for: ~a~%" message))
+		 (setf (cffi:mem-ref size-ptr :int) 0)
+		 (unless (boot-p *internal-server*)
+		   (return)))))))))
    :name "screply thread"))
 
 (defmethod initialize-instance :before ((self internal-server) &key)
