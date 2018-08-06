@@ -30,7 +30,6 @@
 	     (unless (zerop size)
 	       (let* ((message (sc-osc::decode-bundle (sc-buffer *s*)))
 		      (handler (gethash (car message) (reply-handle-table *internal-server*))))
-		 (print message) (terpri)
 		 (if handler (handler-case (apply handler (cdr message))
 			       (error (c) (format t "~a --error in reply thread~%" c)))
 		   (format t "not found handle for: ~a~%" message))

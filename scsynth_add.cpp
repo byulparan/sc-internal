@@ -39,6 +39,13 @@ void communicate_init(char* _buffer) {
   pthread_cond_init(&cond_var2, nullptr);
 }
 
+void sbcl_lock() {
+  pthread_mutex_lock(&mutex);
+}
+
+void sbcl_unlock() {
+  pthread_mutex_unlock(&mutex);
+}
 void sbcl_wait_signal() {
   pthread_cond_wait(&cond_var1, &mutex);
 }
