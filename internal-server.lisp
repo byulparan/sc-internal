@@ -25,16 +25,17 @@
        (with-sbcl-lock
 	 (loop
 	   (cffi:foreign-funcall "sbcl_wait_signal")
+	   (unless (sc-thread *s*) (return))
 	   (let ((size (cffi:mem-ref size-ptr :int)))
 	     (unless (zerop size)
 	       (let* ((message (sc-osc::decode-bundle (sc-buffer *s*)))
 		      (handler (gethash (car message) (reply-handle-table *internal-server*))))
+		 (print message) (terpri)
 		 (if handler (handler-case (apply handler (cdr message))
 			       (error (c) (format t "~a --error in reply thread~%" c)))
 		   (format t "not found handle for: ~a~%" message))
 		 (setf (cffi:mem-ref size-ptr :int) 0)
-		 (unless (boot-p *internal-server*)
-		   (return)))))))))
+		 (cffi:foreign-funcall "sbcl_send_signal"))))))))
    :name "screply thread"))
 
 (defmethod initialize-instance :before ((self internal-server) &key)
@@ -69,10 +70,11 @@
 
 (defmethod cleanup-server ((rt-server internal-server))
   (bt:join-thread (sc-thread rt-server))
+  (setf (sc-thread rt-server) nil)
+  (cffi:foreign-funcall "sbcl_quit_signal")
   (bt:join-thread (sc-reply-thread rt-server))
-  (setf (sc-thread rt-server) nil
-	(sc-reply-thread rt-server) nil
-	(sc-world rt-server) nil))
+  (setf (sc-reply-thread rt-server) nil)
+  (setf (sc-world rt-server) nil))
 
 (defmethod send-message ((server internal-server) &rest msg)
   (let* ((encode-msg (apply #'sc-osc::encode-message msg)))
