@@ -2,9 +2,8 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <string.h>
-// #include <mutex>
-// #include <condition_variable>
-#include <pthread.h>
+#include <mutex>
+#include <condition_variable>
 #include "SC_WorldOptions.h"
 
 
@@ -22,8 +21,8 @@ extern "C" {
 
 char* lisp_buffer;
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t  cond_var  = PTHREAD_COND_INITIALIZER;
+std::recursive_mutex mutex;
+std::condition_variable_any cond;
 
 int sbcl_printf(const char *fmt, va_list ap) {
   vprintf(fmt, ap);
@@ -36,24 +35,26 @@ void communicate_init(char* _buffer) {
 }
 
 void sbcl_lock() {
-  pthread_mutex_lock(&mutex);
+  mutex.lock();
 }
 
 void sbcl_unlock() {
-  pthread_mutex_unlock(&mutex);
+  mutex.unlock();
 }
 
 void sbcl_wait_signal() {
-  pthread_cond_wait(&cond_var, &mutex);
+  std::unique_lock<std::recursive_mutex> lk(mutex);
+  mutex.unlock();
+  cond.wait(lk);
+  mutex.lock();
 }
 
 void sbcl_reply_func (struct ReplyAddress *inReplyAddr, char* inBuf, int inSize) {
-  pthread_mutex_lock(&mutex);
+  std::unique_lock<std::recursive_mutex> lk(mutex);
   memcpy(lisp_buffer, inBuf, inSize);
   sbcl_message_size = inSize;
-  pthread_cond_signal(&cond_var);
-  pthread_mutex_unlock(&mutex);
-}
+  cond.notify_one();
+}        
 
 struct World* make_world(struct WorldOptions* opt) {
   return World_New(opt);
