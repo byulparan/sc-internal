@@ -2,19 +2,25 @@
 
 #+ccl
 (progn
+  #+darwin
   (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
 				  "libscsynth.1.0.0.dylib"))
+  #+linux
+  (cffi:load-foreign-library "/usr/local/lib/libscsynth.so")
   (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
 				  "libscsynth_add.dylib")))
 
-#+Sbcl ;; should be load libscsynth on main-thread
+#+sbcl ;; should be load libscsynth on main-thread
 (let* ((sem (sb-thread:make-semaphore)))
   (sb-thread:interrupt-thread
    (sb-thread:main-thread)
    (lambda ()
      (sb-int:with-float-traps-masked (:invalid :divide-by-zero)
+       #+darwin
        (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
 				       "libscsynth.1.0.0.dylib"))
+       #+linux
+       (cffi:load-foreign-library "/usr/local/lib/libscsynth.so")
        (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
 				       "libscsynth_add.dylib"))
        (sb-thread:signal-semaphore sem))))

@@ -1,4 +1,4 @@
 *.dylib
 *.o
 check_update.cpp
-
+build/
