@@ -8,7 +8,8 @@
   #+linux
   (cffi:load-foreign-library "/usr/local/lib/libscsynth.so")
   (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
-				  "libscsynth_add.dylib")))
+				  #+darwin "libscsynth_add.dylib"
+				  #+linux "libscsynth_add.so")))
 
 #+sbcl ;; should be load libscsynth on main-thread
 (let* ((sem (sb-thread:make-semaphore)))
@@ -22,7 +23,8 @@
        #+linux
        (cffi:load-foreign-library "/usr/local/lib/libscsynth.so")
        (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
-				       "libscsynth_add.dylib"))
+				       #+darwin "libscsynth_add.dylib"
+				       #+linux "libscsynth_add.so"))
        (sb-thread:signal-semaphore sem))))
   (sb-thread:wait-on-semaphore sem))
 
