@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <string.h>
+#include <iostream>
 #include <mutex>
 #include <condition_variable>
 #include "SC_WorldOptions.h"
@@ -60,7 +61,13 @@ void sbcl_quit_signal() {
 
 void sbcl_reply_func (struct ReplyAddress *inReplyAddr, char* inBuf, int inSize) {
   std::unique_lock<std::recursive_mutex> lk(mutex);
-  memset(lisp_buffer, 0, 1024);
+  memset(lisp_buffer, 0, 2048);
+  if (inSize > 2048) {
+    std::cout<<"in reply message size too long: "<<inSize<<" > 2048."<<std::endl;
+    std::cout<<"message cut until 2048."<<std::endl;
+    fflush(stdout);
+    inSize = 2048;
+  }
   memcpy(lisp_buffer, inBuf, inSize);
   sbcl_message_size = inSize;
   cond_var1.notify_one();

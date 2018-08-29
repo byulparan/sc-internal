@@ -4,7 +4,7 @@
 
 (defclass internal-server (rt-server)
   ((sc-world :initform nil :accessor sc-world)
-   (sc-buffer :initform (static-vectors:make-static-vector 1024 :initial-element 0) :reader sc-buffer)
+   (sc-buffer :initform (static-vectors:make-static-vector 2048 :initial-element 0) :reader sc-buffer)
    (sc-reply-thread :initform nil :accessor sc-reply-thread)
    (reply-handle-table :initform (make-hash-table :test #'equal) :reader reply-handle-table)))
 
