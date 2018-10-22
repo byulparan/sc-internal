@@ -4,7 +4,7 @@
 
 (defclass internal-server (rt-server)
   ((sc-world :initform nil :accessor sc-world)
-   (sc-buffer :initform (static-vectors:make-static-vector 2048 :initial-element 0) :reader sc-buffer)
+   (sc-buffer :initform nil :accessor sc-buffer)
    (sc-reply-thread :initform nil :accessor sc-reply-thread)
    (reply-handle-table :initform (make-hash-table :test #'equal) :reader reply-handle-table)))
 
@@ -50,6 +50,7 @@
 
 
 (defmethod bootup-server-process ((rt-server internal-server))
+  (setf (sc-buffer rt-server) (static-vectors:make-static-vector 2048 :initial-element 0))
   (setf (sc-thread rt-server)
 	(bt:make-thread (lambda ()
 			  #+ccl
