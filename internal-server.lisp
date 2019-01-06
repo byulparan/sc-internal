@@ -54,7 +54,9 @@
   (setf (sc-thread rt-server)
 	(bt:make-thread (lambda ()
 			  #+ccl
-			  (ccl:setenv "SC_SYNTHDEF_PATH" (full-pathname *sc-synthdefs-path*))
+			  (let* ((path (full-pathname *sc-synthdefs-path*)))
+			    (when (probe-file path)
+			      (ccl:setenv "SC_SYNTHDEF_PATH" path)))
 			  #+sbcl
 			  (sb-posix:setenv "SC_SYNTHDEF_PATH" (full-pathname *sc-synthdefs-path*) 1)
 			  #+ecl
