@@ -55,7 +55,7 @@
 	(bt:make-thread (lambda ()
 			  #+ccl
 			  (let* ((path (full-pathname *sc-synthdefs-path*)))
-			    (when (probe-file path)
+			    (when (and path (probe-file path))
 			      (ccl:setenv "SC_SYNTHDEF_PATH" path)))
 			  #+sbcl
 			  (sb-posix:setenv "SC_SYNTHDEF_PATH" (full-pathname *sc-synthdefs-path*) 1)
