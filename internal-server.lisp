@@ -52,22 +52,22 @@
 (defmethod bootup-server-process ((rt-server internal-server))
   (setf (sc-buffer rt-server) (static-vectors:make-static-vector 2048 :initial-element 0))
   (setf (sc-thread rt-server)
-	(bt:make-thread (lambda ()
-			  #+ccl
-			  (let* ((path (full-pathname *sc-synthdefs-path*)))
-			    (when (and path (probe-file path))
-			      (ccl:setenv "SC_SYNTHDEF_PATH" path)))
-			  #+sbcl
-			  (sb-posix:setenv "SC_SYNTHDEF_PATH" (full-pathname *sc-synthdefs-path*) 1)
-			  #+ecl
-			  (ext:setenv "SC_SYNTHDEF_PATH" (full-pathname *sc-synthdefs-path*))
-			  (setf (sc-reply-thread rt-server) (start-reply-handle-thread))
-			  (set-print-func (cffi:foreign-symbol-pointer "sbcl_printf"))
-			  (with-server-options (options (server-options rt-server))
-			    (let ((world (make-world options)))
-			      (setf (sc-world rt-server) world)
-			      (world-wait-for-quit (sc-world rt-server) t))))
-			:name "scsynth thread"))
+    (bt:make-thread (lambda ()
+		      #+ccl
+		      (let* ((path (and *sc-synthdefs-path* (full-pathname *sc-synthdefs-path*))))
+			(when (and path (probe-file path))
+			  (ccl:setenv "SC_SYNTHDEF_PATH" path)))
+		      #+sbcl
+		      (sb-posix:setenv "SC_SYNTHDEF_PATH" (full-pathname *sc-synthdefs-path*) 1)
+		      #+ecl
+		      (ext:setenv "SC_SYNTHDEF_PATH" (full-pathname *sc-synthdefs-path*))
+		      (setf (sc-reply-thread rt-server) (start-reply-handle-thread))
+		      (set-print-func (cffi:foreign-symbol-pointer "sbcl_printf"))
+		      (with-server-options (options (server-options rt-server))
+			(let ((world (make-world options)))
+			  (setf (sc-world rt-server) world)
+			  (world-wait-for-quit (sc-world rt-server) t))))
+		    :name "scsynth thread"))
   (thread-wait (lambda () (sc-world rt-server))))
 
 (defmethod cleanup-server ((rt-server internal-server))
