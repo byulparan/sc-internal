@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.6)
 project(scsynth_add)
 
 set(SC3_SRC "$ENV{SC3_SRC}")
+set(CFFI_EXPORT_DIR "~/quicklisp/local-projects/libs/cffi-shared-libs")
+
 if(SC3_SRC) 
 	message("SC3_SRC set to ${SC3_SRC}")
 else()
@@ -11,7 +13,7 @@ endif()
 
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CFFI_EXPORT_DIR})
 
 if(APPLE)
   set(CMAKE_INSTALL_NAME_DIR @rpath)
@@ -19,7 +21,7 @@ if(APPLE)
   
   find_library(LIBSCSYNTH
     NAMES libscsynth.1.0.0.dylib
-    HINTS ${CMAKE_CURRENT_SOURCE_DIR}
+    HINTS ${CFFI_EXPORT_DIR}
     REQUIRED)
   
 elseif(UNIX)

@@ -3,13 +3,17 @@
 #+ccl
 (progn
   #+darwin
-  (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
-				  "libscsynth.1.0.0.dylib"))
+  (progn
+    (cffi:define-foreign-library libscsynth
+     (:darwin "libscsynth.1.0.0.dylib"))
+    (cffi:define-foreign-library libscsynth_add
+     (:darwin "libscsynth_add.dylib"))
+    (cffi:use-foreign-library libscsynth)
+    (cffi:use-foreign-library libscsynth_add))
   #+linux
-  (cffi:load-foreign-library "/usr/local/lib/libscsynth.so")
-  (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
-				  #+darwin "libscsynth_add.dylib"
-				  #+linux "libscsynth_add.so")))
+  (progn
+    (cffi:load-foreign-library "/usr/local/lib/libscsynth.so")
+    (cffi:load-foreign-library "libscsynth_add.so")))
 
 #+sbcl ;; should be load libscsynth on main-thread
 (let* ((sem (sb-thread:make-semaphore)))
