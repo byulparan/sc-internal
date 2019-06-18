@@ -21,6 +21,7 @@
   (cffi:foreign-funcall "communicate_init" :pointer (static-vectors:static-vector-pointer (sc-buffer *s*)))
   (bt:make-thread
    (lambda ()
+     (setf *random-state* (make-random-state t))
      (let ((size-ptr (cffi:foreign-symbol-pointer "sbcl_message_size")))
        (with-sbcl-lock
 	 (loop
