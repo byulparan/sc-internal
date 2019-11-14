@@ -1,77 +1,77 @@
-#include <stdio.h>
-#include <stdarg.h>
-#include <unistd.h>
-#include <string.h>
 #include <iostream>
+#include <string>
+#include <queue>
 #include <mutex>
 #include <condition_variable>
+
 #include "SC_WorldOptions.h"
 
-
 extern "C" {
-  int sbcl_message_size;
-  void sbcl_lock();
-  void sbcl_unlock();
-  void sbcl_wait_signal();
-  void sbcl_send_signal();
-  void sbcl_quit_signal();
-  int sbcl_printf(const char*, va_list);
-  void communicate_init(char* _buffer);
-  void sbcl_reply_func(struct ReplyAddress*, char*, int);
+  bool gReplyThreadRunning;
+  int sc_lisp_printf(const char*, va_list);
+  void sc_lisp_reply_thread(char* _buffer, void (*cl_reply_callback)());
+  void sc_lisp_reply_quit();
+  void sc_lisp_reply_func(struct ReplyAddress*, char*, int);
   struct World* make_world(struct WorldOptions*);
 }
 
-char* lisp_buffer;
+struct Message {
+  char mMessage[2048];
+  int mSize;
+  Message(int size, char* message) {
+    mSize = size;
+    memcpy(mMessage, message, size);
+  }
+};
 
+static std::queue<Message> gMessageQueue;
 std::recursive_mutex mutex;
-std::condition_variable_any cond_var1;
-std::condition_variable_any cond_var2;
+std::condition_variable_any condition_var;
 
-int sbcl_printf(const char *fmt, va_list ap) {
+
+int sc_lisp_printf(const char *fmt, va_list ap) {
   vprintf(fmt, ap);
   fflush(stdout);
   return 0;
 }
 
-void communicate_init(char* _buffer) {
-  lisp_buffer = _buffer;
-}
-
-void sbcl_lock() {
+void sc_lisp_reply_thread(char* lisp_buf, void (*cl_reply_callback)()) {
+  while(!gMessageQueue.empty()) gMessageQueue.pop();
+  gReplyThreadRunning = true;
   mutex.lock();
-}
-
-void sbcl_unlock() {
-  mutex.unlock();
-}
-void sbcl_wait_signal() {
-  std::unique_lock<std::recursive_mutex> lk(mutex);
-  mutex.unlock();
-  cond_var1.wait(lk);
-  mutex.lock();
-}
-
-void sbcl_send_signal() {
-  cond_var2.notify_one();
-}
-
-void sbcl_quit_signal() {
-  cond_var1.notify_one();
-}
-
-void sbcl_reply_func (struct ReplyAddress *inReplyAddr, char* inBuf, int inSize) {
-  std::unique_lock<std::recursive_mutex> lk(mutex);
-  memset(lisp_buffer, 0, 2048);
-  if (inSize > 2048) {
-    std::cout<<"in reply message size too long: "<<inSize<<" > 2048."<<std::endl;
-    std::cout<<"message cut until 2048."<<std::endl;
-    fflush(stdout);
-    inSize = 2048;
+  while(true) {
+    condition_var.wait(mutex);
+    
+    if (!gReplyThreadRunning) break;
+    
+    while(!gMessageQueue.empty()) {
+      Message m = gMessageQueue.front();
+      memcpy(lisp_buf, m.mMessage, m.mSize);
+      cl_reply_callback();
+      gMessageQueue.pop();
+    }
   }
-  memcpy(lisp_buffer, inBuf, inSize);
-  sbcl_message_size = inSize;
-  cond_var1.notify_one();
-  cond_var2.wait(lk);
+  mutex.unlock();
+}
+
+
+void sc_lisp_reply_quit() {
+  mutex.lock();
+  gReplyThreadRunning = false;
+  condition_var.notify_one();
+  mutex.unlock();
+}
+
+void sc_lisp_reply_func (struct ReplyAddress *inReplyAddr, char* inBuf, int inSize) {
+  if (inSize >= 2048) {
+    std::cout<<"message size: "<<inSize<<" is too long. this reply message will ignore."<<std::endl;
+    return;
+  }
+  mutex.lock();
+  Message m(inSize, inBuf);
+  gMessageQueue.push(m);
+  condition_var.notify_one();
+  mutex.unlock();
 }        
 
 struct World* make_world(struct WorldOptions* opt) {
