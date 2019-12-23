@@ -45,7 +45,7 @@ void sc_lisp_reply_thread(char* lisp_buf, void (*cl_reply_callback)()) {
     if (!gReplyThreadRunning) break;
     
     while(!gMessageQueue.empty()) {
-      Message m = gMessageQueue.front();
+      Message& m = gMessageQueue.front();
       memcpy(lisp_buf, m.mMessage, m.mSize);
       cl_reply_callback();
       gMessageQueue.pop();
