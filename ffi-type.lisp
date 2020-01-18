@@ -15,27 +15,31 @@
     (cffi:load-foreign-library "/usr/local/lib/libscsynth.so")
     (cffi:load-foreign-library "libscsynth_add.so")))
 
-#+sbcl ;; should be load libscsynth on main-thread
-(let* ((sem (sb-thread:make-semaphore)))
-  (sb-thread:interrupt-thread
-   (sb-thread:main-thread)
-   (lambda ()
-     (sb-int:with-float-traps-masked (:invalid :divide-by-zero)
-       (progn
-	 #+darwin
-	 (progn
-	   (cffi:define-foreign-library libscsynth
-	     (:darwin "libscsynth.1.0.0.dylib"))
-	   (cffi:define-foreign-library libscsynth_add
-	     (:darwin "libscsynth_add.dylib"))
-	   (cffi:use-foreign-library libscsynth)
-	   (cffi:use-foreign-library libscsynth_add))
-	 #+linux
-	 (progn
-	   (cffi:load-foreign-library "/usr/local/lib/libscsynth.so")
-	   (cffi:load-foreign-library "libscsynth_add.so")))
-       (sb-thread:signal-semaphore sem))))
-  (sb-thread:wait-on-semaphore sem))
+#-ccl 
+(defmacro call-in-main-thread (function)
+  `(if (sb-thread:main-thread-p) (funcall ,function)
+     (trivial-main-thread:call-in-main-thread 
+       ,function
+      :blocking t)))
+
+#+sbcl ;; should be load libscsynth on main-thread(SBCL)
+(call-in-main-thread
+  (lambda ()
+    (sb-int:with-float-traps-masked (:invalid :divide-by-zero)
+      (progn
+	#+darwin
+	(progn
+	  (cffi:define-foreign-library libscsynth
+	    (:darwin "libscsynth.1.0.0.dylib"))
+	  (cffi:define-foreign-library libscsynth_add
+	    (:darwin "libscsynth_add.dylib"))
+	  (cffi:use-foreign-library libscsynth)
+	  (cffi:use-foreign-library libscsynth_add))
+	#+linux
+	(progn
+	  (cffi:load-foreign-library "/usr/local/lib/libscsynth.so")
+	  (cffi:load-foreign-library "libscsynth_add.so")))
+      )))
 
 #+ecl
 (handler-case 

@@ -41,7 +41,7 @@
 (defmethod bootup-server-process ((rt-server internal-server))
   (setf (sc-buffer rt-server) (static-vectors:make-static-vector 2048 :initial-element 0))
   (#+ccl ccl::call-in-initial-process
-   #-ccl trivial-main-thread:call-in-main-thread
+   #+sbcl call-in-main-thread
    (lambda ()
      #+ccl
      (let* ((path (and *sc-synthdefs-path* (full-pathname *sc-synthdefs-path*))))
