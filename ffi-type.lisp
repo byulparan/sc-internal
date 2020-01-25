@@ -15,31 +15,27 @@
     (cffi:load-foreign-library "/usr/local/lib/libscsynth.so")
     (cffi:load-foreign-library "libscsynth_add.so")))
 
-#-ccl 
+#+sbcl
 (defmacro call-in-main-thread (function)
-  `(if (sb-thread:main-thread-p) (funcall ,function)
-     (trivial-main-thread:call-in-main-thread 
-       ,function
-      :blocking t)))
+  `(trivial-main-thread:call-in-main-thread
+    ,function
+    :blocking t))
 
-#+sbcl ;; should be load libscsynth on main-thread(SBCL)
+#+sbcl 
 (call-in-main-thread
-  (lambda ()
-    (sb-int:with-float-traps-masked (:invalid :divide-by-zero)
-      (progn
-	#+darwin
-	(progn
-	  (cffi:define-foreign-library libscsynth
-	    (:darwin "libscsynth.1.0.0.dylib"))
-	  (cffi:define-foreign-library libscsynth_add
-	    (:darwin "libscsynth_add.dylib"))
-	  (cffi:use-foreign-library libscsynth)
-	  (cffi:use-foreign-library libscsynth_add))
-	#+linux
-	(progn
-	  (cffi:load-foreign-library "/usr/local/lib/libscsynth.so")
-	  (cffi:load-foreign-library "libscsynth_add.so")))
-      )))
+ (lambda ()
+   (sb-int:with-float-traps-masked (:invalid :overflow :divide-by-zero)
+     (progn
+       #+darwin
+       (sb-alien:load-shared-object "/Users/byul/quicklisp/local-projects/libs/cffi-shared-libs/libscsynth.1.0.0.dylib"
+				    :dont-save t)
+       (sb-alien:load-shared-object "/Users/byul/quicklisp/local-projects/libs/cffi-shared-libs/libscsynth_add.dylib"
+				    :dont-save t)
+       #+linux
+       (progn
+	 (cffi:load-foreign-library "/usr/local/lib/libscsynth.so")
+	 (cffi:load-foreign-library "libscsynth_add.so"))))))
+
 
 #+ecl
 (handler-case 

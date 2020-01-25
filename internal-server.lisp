@@ -63,7 +63,7 @@
 
 (defmethod cleanup-server ((rt-server internal-server))
   (#+ccl ccl::call-in-initial-process
-   #-ccl trivial-main-thread:call-in-main-thread
+   #+sbcl call-in-main-thread
    (lambda () (world-wait-for-quit (sc-world rt-server) t)))
   (setf (sc-thread rt-server) nil)
   (cffi:foreign-funcall "sc_lisp_reply_quit")
