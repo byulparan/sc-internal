@@ -1,5 +1,6 @@
 *.dylib
 *.so
 *.o
+check_update
 check_update.cpp
 build/
