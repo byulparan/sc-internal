@@ -40,8 +40,7 @@
 
 (defmethod bootup-server-process ((rt-server internal-server))
   (setf (sc-buffer rt-server) (static-vectors:make-static-vector 2048 :initial-element 0))
-  (#+ccl ccl::call-in-initial-process
-   #+sbcl call-in-main-thread
+  (call-in-main-thread
    (lambda ()
      #+ccl
      (let* ((path (and *sc-synthdefs-path* (full-pathname *sc-synthdefs-path*))))
@@ -62,8 +61,7 @@
 	 (setf (sc-world rt-server) world))))))
 
 (defmethod cleanup-server ((rt-server internal-server))
-  (#+ccl ccl::call-in-initial-process
-   #+sbcl call-in-main-thread
+  (call-in-main-thread
    (lambda () (world-wait-for-quit (sc-world rt-server) t)))
   (setf (sc-thread rt-server) nil)
   (cffi:foreign-funcall "sc_lisp_reply_quit")

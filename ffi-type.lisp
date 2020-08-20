@@ -1,5 +1,10 @@
 (in-package #:sc)
 
+(defmacro call-in-main-thread (function)
+  `(trivial-main-thread:call-in-main-thread
+    ,function
+    :blocking t))
+
 #+ccl
 (progn
   #+darwin
@@ -15,11 +20,6 @@
     (cffi:load-foreign-library "/usr/local/lib/libscsynth.so")
     (cffi:load-foreign-library "libscsynth_add.so")))
 
-#+sbcl
-(defmacro call-in-main-thread (function)
-  `(trivial-main-thread:call-in-main-thread
-    ,function
-    :blocking t))
 
 #+sbcl 
 (call-in-main-thread
