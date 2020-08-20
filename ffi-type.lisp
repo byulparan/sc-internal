@@ -5,7 +5,7 @@
     ,function
     :blocking t))
 
-#+ccl
+#+(or ccl lispworks)
 (progn
   #+darwin
   (progn
