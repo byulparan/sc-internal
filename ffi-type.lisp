@@ -27,9 +27,9 @@
    (sb-int:with-float-traps-masked (:invalid :overflow :divide-by-zero)
      (progn
        #+darwin
-       (sb-alien:load-shared-object "/Users/byul/quicklisp/local-projects/libs/cffi-shared-libs/libscsynth.1.0.0.dylib"
+       (sb-alien:load-shared-object "/Users/byul/quicklisp/local-projects/lib/cffi-shared-lib/libscsynth.1.0.0.dylib"
 				    :dont-save t)
-       (sb-alien:load-shared-object "/Users/byul/quicklisp/local-projects/libs/cffi-shared-libs/libscsynth_add.dylib"
+       (sb-alien:load-shared-object "/Users/byul/quicklisp/local-projects/lib/cffi-shared-lib/libscsynth_add.dylib"
 				    :dont-save t)
        #+linux
        (progn

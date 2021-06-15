@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 project(scsynth_add)
 
 set(SC3_SRC "$ENV{SC3_SRC}")
-set(CFFI_EXPORT_DIR "~/quicklisp/local-projects/libs/cffi-shared-libs")
+set(CFFI_EXPORT_DIR "~/quicklisp/local-projects/lib/cffi-shared-lib")
 
 if(SC3_SRC) 
 	message("SC3_SRC set to ${SC3_SRC}")
