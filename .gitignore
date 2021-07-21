@@ -1,6 +1,5 @@
 *.dylib
 *.so
 *.o
-check_update
-check_update.cpp
+check-update
 build/
