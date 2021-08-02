@@ -136,6 +136,7 @@
   (shared-controls :pointer)
   (real-time :char)
   (memory-locking :char)
+  (safety-clip-threshold :float)
   (non-realtime-cmd-filename :string)
   (non-realtime-input-filename :string)
   (non-realtime-output-filename :string)
@@ -185,6 +186,7 @@
 	 shared-controls (cffi:null-pointer)
 	 real-time 1
 	 memory-locking 0
+	 safety-clip-threshold 1.26
 	 non-realtime-cmd-filename (cffi-sys:null-pointer)
 	 non-realtime-input-filename (cffi-sys:null-pointer)
 	 non-realtime-output-filename (cffi-sys:null-pointer)
