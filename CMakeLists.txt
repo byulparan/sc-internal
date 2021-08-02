@@ -38,9 +38,3 @@ target_include_directories(scsynth_add PUBLIC
 
 target_link_libraries(scsynth_add ${LIBSCSYNTH})
 
-add_executable(check-update check-update.cpp)
-target_include_directories(check-update PUBLIC
-  "${SC3_SRC}/include/server"
-  "${SC3_SRC}/include/plugin_interface"
-  "${SC3_SRC}/include/common")
-
