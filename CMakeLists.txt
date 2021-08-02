@@ -2,14 +2,8 @@ cmake_minimum_required(VERSION 3.0)
 
 project(scsynth_add)
 
-set(SC3_SRC "$ENV{SC3_SRC}")
+set(SC3_SRC "/Users/byul/Dropbox/external-code/SuperCollider")
 set(CFFI_EXPORT_DIR "~/quicklisp/local-projects/lib/cffi-shared-lib")
-
-if(SC3_SRC) 
-	message("SC3_SRC set to ${SC3_SRC}")
-else()
-    message(FATAL_ERROR "Please define the SC3_SRC environment variable to point to SuperCollider source folder.")
-endif()
 
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
