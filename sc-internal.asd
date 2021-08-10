@@ -1,6 +1,5 @@
 (asdf/defsystem:defsystem #:sc-internal
-  :depends-on (#:cffi-shared-lib
-	       #:cl-collider
+  :depends-on (#:cl-collider
 	       #:static-vectors
 	       #:trivial-main-thread)
   :serial t

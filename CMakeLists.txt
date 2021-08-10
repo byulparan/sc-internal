@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 project(scsynth_add)
 
 set(SC3_SRC "/Users/byul/Dropbox/external-code/SuperCollider")
-set(CFFI_EXPORT_DIR "~/quicklisp/local-projects/lib/cffi-shared-lib")
+set(CFFI_EXPORT_DIR "/Users/byul/lib")
 
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
