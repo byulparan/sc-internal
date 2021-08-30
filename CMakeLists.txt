@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 
 project(scsynth_add)
 
-set(SC3_SRC "/Users/byul/Dropbox/external-code/SuperCollider")
+set(SC3_SRC "/Users/byul/code/SuperCollider")
 set(CFFI_EXPORT_DIR "/Users/byul/lib")
 
 
