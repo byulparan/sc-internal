@@ -5,7 +5,7 @@
     ,function
     :blocking t))
 
-#+(or ccl lispworks)
+#+(or ccl lispworks ecl)
 (progn
   #+darwin
   (progn
@@ -42,12 +42,6 @@
 				    (load-lib)
 				    (sb-thread:signal-semaphore sem)))
       (sb-thread:wait-on-semaphore sem))))
-
-#+ecl
-(handler-case 
-    (cffi:load-foreign-library (cat (namestring (asdf/system:system-source-directory :sc-internal))
-				       "libscsynth_add.dylib"))
-  (error ()))
 
 (cffi:defcfun memset :pointer
   (s :pointer)
