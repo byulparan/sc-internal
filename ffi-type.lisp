@@ -12,13 +12,13 @@
     (cffi:define-foreign-library libscsynth
      (:darwin "libscsynth.1.0.0.dylib"))
     (cffi:define-foreign-library libscsynth_add
-     (:darwin "libscsynth_add.dylib"))
+     (:darwin "libscsynth-add.dylib"))
     (cffi:use-foreign-library libscsynth)
-    (cffi:use-foreign-library libscsynth_add))
+    (cffi:use-foreign-library libscsynth-add))
   #+linux
   (progn
     (cffi:load-foreign-library "/usr/local/lib/libscsynth.so")
-    (cffi:load-foreign-library "libscsynth_add.so")))
+    (cffi:load-foreign-library "libscsynth-add.so")))
 
 #+sbcl
 (flet ((load-lib ()
@@ -27,14 +27,14 @@
 	   (progn
 	     (cffi:define-foreign-library libscsynth
 	       (:darwin "libscsynth.1.0.0.dylib"))
-	     (cffi:define-foreign-library libscsynth_add
-	       (:darwin "libscsynth_add.dylib"))
+	     (cffi:define-foreign-library libscsynth-add
+	       (:darwin "libscsynth-add.dylib"))
 	     (cffi:use-foreign-library libscsynth)
-	     (cffi:use-foreign-library libscsynth_add))
+	     (cffi:use-foreign-library libscsynth-add))
 	   #+linux
 	   (progn
 	     (cffi:load-foreign-library "/usr/local/lib/libscsynth.so")
-	     (cffi:load-foreign-library "libscsynth_add.so")))))
+	     (cffi:load-foreign-library "libscsynth-add.so")))))
   (if (sb-thread:main-thread-p) (load-lib)
     (let* ((sem (sb-thread:make-semaphore)))
       (sb-thread:interrupt-thread (sb-thread:main-thread)

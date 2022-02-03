@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(scsynth_add)
+project(scsynth-add)
 
 set(SC3_SRC "/Users/byul/code/SuperCollider")
 set(CFFI_EXPORT_DIR "/Users/byul/lib")
@@ -29,12 +29,12 @@ endif(APPLE)
 
 
 
-add_library(scsynth_add SHARED scsynth_add.cpp)
+add_library(scsynth-add SHARED scsynth_add.cpp)
 
-target_include_directories(scsynth_add PUBLIC
+target_include_directories(scsynth-add PUBLIC
   "${SC3_SRC}/include/server"
   "${SC3_SRC}/include/plugin_interface"
   "${SC3_SRC}/include/common")
 
-target_link_libraries(scsynth_add ${LIBSCSYNTH})
+target_link_libraries(scsynth-add ${LIBSCSYNTH})
 
