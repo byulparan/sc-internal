@@ -75,7 +75,7 @@
 (defmethod send-bundle ((server internal-server) time lists-of-messages)
   (let* ((encode-msg (#-lispworks progn
 		      #+lispworks sys:in-static-area
-		      (sc-osc::encode-bundle lists-of-messages time))))
+		      (sc-osc::encode-bundle lists-of-messages (+ time (latency server))))))
     (cffi:with-pointer-to-vector-data (msg encode-msg)
       (world-send-packet (sc-world server) (length encode-msg) msg (cffi:foreign-symbol-pointer "sc_lisp_reply_func")))))
 
