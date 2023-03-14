@@ -6,7 +6,7 @@ set(SC3_SRC "/Users/byul/code/SuperCollider")
 set(CFFI_EXPORT_DIR "/Users/byul/lib")
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -I/usr/local/include -I/opt/homebrew/include")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CFFI_EXPORT_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
