@@ -25,7 +25,7 @@ elseif(UNIX)
     HINTS /usr/local/lib
     REQUIRED)
 
-endif(APPLE)
+endif()
 
 
 
