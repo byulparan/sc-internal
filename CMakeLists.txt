@@ -2,9 +2,10 @@ cmake_minimum_required(VERSION 3.0)
 
 project(scsynth-add)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(SC3_SRC "/Users/byul/code/SuperCollider")
 set(CFFI_EXPORT_DIR "/Users/byul/lib")
-
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -I/usr/local/include -I/opt/homebrew/include")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CFFI_EXPORT_DIR})
@@ -37,4 +38,9 @@ target_include_directories(scsynth-add PUBLIC
   "${SC3_SRC}/include/common")
 
 target_link_libraries(scsynth-add ${LIBSCSYNTH})
+
+
+
+
+
 
