@@ -12,11 +12,12 @@
   t)
 
 (cffi:defcallback sc-reply-lisp-callback :void nil
-  (let* ((message (sc-osc::decode-bundle (sc-buffer *internal-server*)))
-	 (handler (gethash (car message) (reply-handle-table *internal-server*))))
-    (if handler (handler-case (apply handler (cdr message))
-		  (error (c) (format t "~a --error in reply thread~%" c)))
-      (format t "not found handle for ~a~%" message))))
+  (let* ((messages (cdr (sc-osc::decode-bundle (sc-buffer *internal-server*)))))
+    (loop for message in messages
+	  for handler = (gethash (car message) (reply-handle-table *internal-server*))
+	  do (if handler (handler-case (apply handler (cdr message))
+			   (error (c) (format t "~a --error in reply thread~%" c)))
+	       (format t "not found handle for ~a~%" message)))))
 
 (defun start-reply-handle-thread ()
   (bt:make-thread
