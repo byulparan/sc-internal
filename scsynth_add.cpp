@@ -1,7 +1,8 @@
 #include <iostream>
 #include <string>
-#include <semaphore>
-#include <boost/lockfree/queue.hpp>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
 
 #include "SC_WorldOptions.h"
 
@@ -17,11 +18,15 @@ extern "C" {
 struct Message {
   char mMessage[2048];
   int mSize;
+  Message(int size, char* message) {
+    mSize = size;
+    memcpy(mMessage, message, size);
+  }
 };
 
-
-std::counting_semaphore gSemaphore{0};
-boost::lockfree::queue<Message> gQueue(2048);
+static std::queue<Message> gMessageQueue;
+std::recursive_mutex mutex;
+std::condition_variable_any condition_var;
 
 
 int sc_lisp_printf(const char *fmt, va_list ap) {
@@ -31,30 +36,30 @@ int sc_lisp_printf(const char *fmt, va_list ap) {
 }
 
 void sc_lisp_reply_thread(char* lisp_buf, void (*cl_reply_callback)()) {
-  Message dummy;
-  while(gQueue.pop(dummy));
-  
+  while(!gMessageQueue.empty()) gMessageQueue.pop();
   gReplyThreadRunning = true;
-
+  mutex.lock();
   while(true) {
-    gSemaphore.acquire();
-    
+    condition_var.wait(mutex);
+										     
     if (!gReplyThreadRunning) break;
-
-    Message m;
-    if(gQueue.pop(m)) {
+										     
+    while(!gMessageQueue.empty()) {
+      Message& m = gMessageQueue.front();
       memcpy(lisp_buf, m.mMessage, m.mSize);
       cl_reply_callback();
+      gMessageQueue.pop();
     }
   }
-  
+  mutex.unlock();
 }
 
 
 void sc_lisp_reply_quit() {
-
+  mutex.lock();
   gReplyThreadRunning = false;
-  gSemaphore.release();
+  condition_var.notify_one();
+  mutex.unlock();
 }
 
 void sc_lisp_reply_func (struct ReplyAddress *inReplyAddr, char* inBuf, int inSize) {
@@ -62,13 +67,11 @@ void sc_lisp_reply_func (struct ReplyAddress *inReplyAddr, char* inBuf, int inSi
     std::cout<<"message size: "<<inSize<<" is too long. this reply message will ignore."<<std::endl;
     return;
   }
-  
-  Message m;
-  memcpy(m.mMessage, inBuf, inSize);
-  m.mSize = inSize;
-  
-  gQueue.push(m);
-  gSemaphore.release();
+  mutex.lock();
+  Message m(inSize, inBuf);
+  gMessageQueue.push(m);
+  condition_var.notify_one();
+  mutex.unlock();
 }        
 
 struct World* make_world(struct WorldOptions* opt) {
