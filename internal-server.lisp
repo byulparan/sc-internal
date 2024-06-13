@@ -83,11 +83,11 @@
 
 (defun control-get-sync (index)
   (cffi:with-foreign-slots ((control-bus) (sc-world *s*) (:struct world))
-    (cffi:mem-aref control-bus :float index)))
+    (cffi:mem-aref control-bus :float (floor (floatfy index)))))
 
 (defun control-set-sync (index value)
   (cffi:with-foreign-slots ((control-bus) (sc-world *s*) (:struct world))
-    (setf (cffi:mem-aref control-bus :float index) (coerce value 'single-float))))
+    (setf (cffi:mem-aref control-bus :float (floor (floatfy index))) (coerce value 'single-float))))
 
 (defun buffer-data (buffer)
   (let* ((chanls (chanls buffer))
