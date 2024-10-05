@@ -54,7 +54,7 @@
      (with-server-options (options (server-options rt-server))
        (let ((world (make-world options)))
 	 (setf (sc-thread rt-server)
-	   (trivial-main-thread:find-main-thread))
+	   (trivial-main-thread:main-thread))
 	 (setf (sc-world rt-server) world))))))
 
 (defmethod cleanup-server ((rt-server internal-server))
