@@ -57,6 +57,17 @@
 	   (trivial-main-thread:main-thread))
 	 (setf (sc-world rt-server) world))))))
 
+
+
+;; 
+;; 2025.01.22 byulparan@gmail.com
+;; 지금 사용하고 있는 scsynth(직접 빌드)는 버그인지는 몰라도 종료 될때 동작 중인 노드가 있으면
+;; crash 가 발생한다. 그래서 서버 종료 전에 모든 그룹을 해제 하는 프로세스 추가.
+;; 
+(defmethod server-quit :before ((rt-server internal-server))
+  (group-free-all 0))
+
+
 (defmethod cleanup-server ((rt-server internal-server))
   (call-in-main-thread
    (lambda () (world-wait-for-quit (sc-world rt-server) t)))
@@ -65,6 +76,26 @@
   (bt:join-thread (sc-reply-thread rt-server))
   (setf (sc-reply-thread rt-server) nil)
   (setf (sc-world rt-server) nil))
+
+
+
+(defun core-audio-time ()
+  (* 1d-9
+     (cffi:foreign-funcall "AudioConvertHostTimeToNanos" :int64
+			   (cffi:foreign-funcall "AudioGetCurrentHostTime" :int64)
+			   :int64)))
+
+
+(defmethod initialize-scheduler ((rt-server internal-server))
+  (setf (scheduler rt-server) (make-instance 'scheduler
+				:name (name rt-server)
+				:server rt-server
+				:timestamp #'core-audio-time)
+	(tempo-clock rt-server) (make-instance 'tempo-clock
+				  :name (name rt-server)
+				  :server rt-server
+				  :timestamp #'core-audio-time)))
+
 
 (defmethod send-message ((server internal-server) &rest msg)
   (let* ((encode-msg (#-lispworks progn
@@ -76,7 +107,7 @@
 (defmethod send-bundle ((server internal-server) time lists-of-messages)
   (let* ((encode-msg (#-lispworks progn
 		      #+lispworks sys:in-static-area
-		      (sc-osc::encode-bundle lists-of-messages (+ time (latency server))))))
+		      (sc-osc::encode-bundle lists-of-messages (round (* (+ time (latency server)) sc-osc::+2^32+))))))
     (cffi:with-pointer-to-vector-data (msg encode-msg)
       (world-send-packet (sc-world server) (length encode-msg) msg (cffi:foreign-symbol-pointer "sc_lisp_reply_func")))))
 

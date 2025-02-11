@@ -4,8 +4,8 @@ project(scsynth-add)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(SC3_SRC "/Users/byul/code/SuperCollider")
-set(CFFI_EXPORT_DIR "/Users/byul/lib")
+set(SC3_SRC "/Users/byul/Dropbox/code/tools/SuperCollider")
+set(CFFI_EXPORT_DIR "/Users/byul/Dropbox/code/usr/lib")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -I/usr/local/include -I/opt/homebrew/include")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CFFI_EXPORT_DIR})

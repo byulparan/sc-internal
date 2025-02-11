@@ -6,6 +6,7 @@
 
 #include "SC_WorldOptions.h"
 
+
 extern "C" {
   bool gReplyThreadRunning;
   int sc_lisp_printf(const char*, va_list);
@@ -13,6 +14,7 @@ extern "C" {
   void sc_lisp_reply_quit();
   void sc_lisp_reply_func(struct ReplyAddress*, char*, int);
   struct World* make_world(struct WorldOptions*);
+
 }
 
 struct Message {
@@ -77,5 +79,7 @@ void sc_lisp_reply_func (struct ReplyAddress *inReplyAddr, char* inBuf, int inSi
 struct World* make_world(struct WorldOptions* opt) {
   return World_New(opt);
 }
+
+
 
 
