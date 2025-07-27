@@ -6,11 +6,7 @@
   ((sc-world :initform nil :accessor sc-world)
    (sc-buffer :initform nil :accessor sc-buffer)
    (sc-reply-thread :initform nil :accessor sc-reply-thread)
-   (reply-handle-table :initform (make-hash-table :test #'equal) :reader reply-handle-table)
-   (host-time-offset :initform 0.0d0 :accessor host-time-offset)
-   (sync-time-thread :initform nil :accessor sync-time-thread)
-   (sync-time-semaphore :initform (bt:make-semaphore) :reader sync-time-semaphore)))
-
+   (reply-handle-table :initform (make-hash-table :test #'equal) :reader reply-handle-table)))
 
 (defmethod is-local-p ((server internal-server))
   t)
@@ -63,11 +59,11 @@
 
 
 
-;; ;; 
-;; ;; 2025.01.22 byulparan@gmail.com
-;; ;; 지금 사용하고 있는 scsynth(직접 빌드)는 버그인지는 몰라도 종료 될때 동작 중인 노드가 있으면
-;; ;; crash 가 발생한다. 그래서 서버 종료 전에 모든 그룹을 해제 하는 프로세스 추가.
-;; ;; 
+;; 
+;; 2025.01.22 byulparan@gmail.com
+;; 지금 사용하고 있는 scsynth(직접 빌드)는 버그인지는 몰라도 종료 될때 동작 중인 노드가 있으면
+;; crash 가 발생한다. 그래서 서버 종료 전에 모든 그룹을 해제 하는 프로세스 추가.
+;; 
 (defmethod server-quit :before ((rt-server internal-server))
   (group-free-all 0))
 
@@ -79,9 +75,6 @@
   (cffi:foreign-funcall "sc_lisp_reply_quit")
   (bt:join-thread (sc-reply-thread rt-server))
   (setf (sc-reply-thread rt-server) nil)
-  (bt:signal-semaphore (sync-time-semaphore rt-server))
-  (bt:join-thread (sync-time-thread rt-server))
-  (setf (sync-time-thread rt-server) nil)
   (setf (sc-world rt-server) nil))
 
 
@@ -92,23 +85,8 @@
 			   (cffi:foreign-funcall "AudioGetCurrentHostTime" :int64)
 			   :int64)))
 
-(defun sync-sched-time-with-unixtime (rt-server)
-  (let* ((min-diff 10000000)
-	 (new-offset (host-time-offset rt-server)))
-    (dotimes (i 8)
-      (let* ((before-time (core-audio-time))
-	     (unix-time (unix-time))
-	     (after-time (core-audio-time))
-	     (diff (- after-time before-time)))
-	(when (< diff min-diff)
-	  (setf min-diff diff)
-	  (let ((system-time-in-osc (round (* (+ before-time (* diff .5)) sc-osc::+2^32+)))
-		(unix-time-in-osc (round (* (+ unix-time osc::+unix-epoch+) sc-osc::+2^32+))))
-	    (setf new-offset (- unix-time-in-osc system-time-in-osc))))))
-    (setf (host-time-offset rt-server) new-offset)))
 
 (defmethod initialize-scheduler ((rt-server internal-server))
-  (sync-sched-time-with-unixtime rt-server)
   (setf (scheduler rt-server) (make-instance 'scheduler
 				:name (name rt-server)
 				:server rt-server
@@ -116,13 +94,7 @@
 	(tempo-clock rt-server) (make-instance 'tempo-clock
 				  :name (name rt-server)
 				  :server rt-server
-				  :timestamp #'core-audio-time)
-	(sync-time-thread rt-server) (bt:make-thread
-				      (lambda ()
-					(loop for wait = (bt:wait-on-semaphore (sync-time-semaphore rt-server) :timeout 20.0)
-					 while (not wait)
-					 do (sync-sched-time-with-unixtime rt-server)))
-				 :name "Sync ScheduleTime With UnixTime thread")))
+				  :timestamp #'core-audio-time)))
 
 
 (defmethod send-message ((server internal-server) &rest msg)
@@ -132,12 +104,10 @@
     (cffi:with-pointer-to-vector-data (msg encode-msg)
       (world-send-packet (sc-world server) (length encode-msg) msg (cffi:foreign-symbol-pointer "sc_lisp_reply_func")))))
 
-
 (defmethod send-bundle ((server internal-server) time lists-of-messages)
   (let* ((encode-msg (#-lispworks progn
 		      #+lispworks sys:in-static-area
-		      (sc-osc::encode-bundle lists-of-messages (+ (round (* (+ time (latency server)) sc-osc::+2^32+))
-								  (host-time-offset server))))))
+		      (sc-osc::encode-bundle lists-of-messages (round (* (+ time (latency server)) sc-osc::+2^32+))))))
     (cffi:with-pointer-to-vector-data (msg encode-msg)
       (world-send-packet (sc-world server) (length encode-msg) msg (cffi:foreign-symbol-pointer "sc_lisp_reply_func")))))
 
