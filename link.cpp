@@ -2,7 +2,7 @@
 
 
 extern "C" {
-  void LinkEnable();
+  void LinkEnable(float bpm);
   void LinkDisable();
   float LinkGetTempo();
   void LinkSetTempo(float bpm);
@@ -15,9 +15,9 @@ extern "C" {
 static ableton::Link *gLink = nullptr;
 
 
-void LinkEnable() {
+void LinkEnable(float bpm) {
   if (!gLink) {
-    gLink = new ableton::Link(60.0);
+    gLink = new ableton::Link(bpm);
   }
   gLink->enable(true);
 }
