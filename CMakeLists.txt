@@ -6,7 +6,7 @@ project(scsynth-add)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(SC3_SRC "/Users/byul/Dropbox/code/tools/SuperCollider")
-set(CFFI_EXPORT_DIR "/Users/byul/Dropbox/code/usr/lib")
+set(CFFI_EXPORT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 
 include(~/Dropbox/code/tools/link/AbletonLinkConfig.cmake)
 

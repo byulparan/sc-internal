@@ -5,6 +5,11 @@
     ,function
     :blocking t))
 
+
+#+darwin
+(pushnew '(merge-pathnames "lib/" (asdf:system-source-directory :sc-internal))  cffi:*foreign-library-directories*)
+
+
 #+(or ccl lispworks ecl)
 (progn
   #+darwin
