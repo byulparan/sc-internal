@@ -31,7 +31,7 @@
 	   #+darwin
 	   (progn
 	     (cffi:define-foreign-library libscsynth
-	       (:darwin "libscsynth.1.0.0.dylib"))
+	       (:darwin "libscsynth.1.dylib"))
 	     (cffi:define-foreign-library libscsynth-add
 	       (:darwin "libscsynth-add.dylib"))
 	     (cffi:use-foreign-library libscsynth)

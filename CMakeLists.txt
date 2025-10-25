@@ -21,7 +21,7 @@ if(APPLE)
   set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR ON)
   
   find_library(LIBSCSYNTH
-    NAMES libscsynth.1.0.0.dylib
+    NAMES libscsynth.1.dylib
     HINTS ${CFFI_EXPORT_DIR}
     REQUIRED)
   
