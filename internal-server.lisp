@@ -60,15 +60,6 @@
 
 
 
-;; 
-;; 2025.01.22 byulparan@gmail.com
-;; 지금 사용하고 있는 scsynth(직접 빌드)는 버그인지는 몰라도 종료 될때 동작 중인 노드가 있으면
-;; crash 가 발생한다. 그래서 서버 종료 전에 모든 그룹을 해제 하는 프로세스 추가.
-;; 
-(defmethod server-quit :before ((rt-server internal-server))
-  (group-free-all 0))
-
-
 (defmethod cleanup-server ((rt-server internal-server))
   (call-in-main-thread
    (lambda () (world-wait-for-quit (sc-world rt-server) t)))
