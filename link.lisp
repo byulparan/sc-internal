@@ -74,7 +74,7 @@
       (set-clock (make-instance 'sc::tempo-clock
 		   :name (sc::name *s*)
 		   :server *s*
-		   :timestamp #'monotonic-time
+		   :timestamp #'core-audio-time
 		   :bpm (sc-extensions:bpm)))
       (alexandria::removef sc-extensions::*bpm-functions* #'link-set-tempo)
       (alexandria:removef *server-quit-hooks* #'link-disable)
