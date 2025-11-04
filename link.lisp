@@ -60,7 +60,7 @@
   (stop)
   (if flag (progn
 	     (link-enable (sc-extensions:bpm))
-	     (setf (host-offset *s*) (sync-timeoffset))
+	     (setf (link-offset *s*) (sync-timeoffset))
 	     (pushnew #'link-set-tempo sc-extensions::*bpm-functions*)
 	     (pushnew #'link-disable  *server-quit-hooks*)
 	     (set-clock (make-instance 'sc::link-clock
@@ -70,7 +70,7 @@
 			  :bpm (link-get-tempo)))
 	     (sc-extensions:bpm (link-get-tempo)))
     (progn
-      (setf (host-offset *s*) 0)
+      (setf (link-offset *s*) 0)
       (set-clock (make-instance 'sc::tempo-clock
 		   :name (sc::name *s*)
 		   :server *s*
