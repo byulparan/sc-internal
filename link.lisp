@@ -47,9 +47,9 @@
 	 (min-diff 10000000)
 	 (offset 0.0))
     (dotimes (i 8)
-      (let* ((before-time (monotonic-time))
+      (let* ((before-time (core-audio-time))
 	     (link-time (link-get-time))
-	     (after-time (monotonic-time)))
+	     (after-time (core-audio-time)))
 	(setf diff (- after-time before-time))
 	(when (< diff min-diff)
 	  (setf min-diff diff)
@@ -60,7 +60,7 @@
   (stop)
   (if flag (progn
 	     (link-enable (sc-extensions:bpm))
-	     (setf (link-offset *s*) (sync-timeoffset))
+	     (setf (host-offset *s*) (sync-timeoffset))
 	     (pushnew #'link-set-tempo sc-extensions::*bpm-functions*)
 	     (pushnew #'link-disable  *server-quit-hooks*)
 	     (set-clock (make-instance 'sc::link-clock
@@ -70,7 +70,7 @@
 			  :bpm (link-get-tempo)))
 	     (sc-extensions:bpm (link-get-tempo)))
     (progn
-      (setf (link-offset *s*) 0)
+      (setf (host-offset *s*) 0)
       (set-clock (make-instance 'sc::tempo-clock
 		   :name (sc::name *s*)
 		   :server *s*

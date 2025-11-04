@@ -7,7 +7,7 @@
    (sc-buffer :initform nil :accessor sc-buffer)
    (sc-reply-thread :initform nil :accessor sc-reply-thread)
    (reply-handle-table :initform (make-hash-table :test #'equal) :reader reply-handle-table)
-   (link-offset :initform 0 :accessor link-offset)))
+   (host-offset :initform 0 :accessor host-offset)))
 
 (defmethod is-local-p ((server internal-server))
   t)
@@ -71,6 +71,23 @@
 
 
 
+(defun core-audio-time ()
+  (* 1d-9
+     (cffi:foreign-funcall "AudioConvertHostTimeToNanos" :int64
+			   (cffi:foreign-funcall "AudioGetCurrentHostTime" :int64)
+			   :int64)))
+
+
+(defmethod initialize-scheduler ((rt-server internal-server))
+  (setf (scheduler rt-server) (make-instance 'scheduler
+				:name (name rt-server)
+				:server rt-server
+				:timestamp #'core-audio-time)
+	(tempo-clock rt-server) (make-instance 'tempo-clock
+				  :name (name rt-server)
+				  :server rt-server
+				  :timestamp #'core-audio-time)))
+
 
 (defmethod send-message ((server internal-server) &rest msg)
   (let* ((encode-msg (#-lispworks progn
@@ -82,12 +99,7 @@
 (defmethod send-bundle ((server internal-server) time lists-of-messages)
   (let* ((encode-msg (#-lispworks progn
 		      #+lispworks sys:in-static-area
-		      (sc-osc::encode-bundle lists-of-messages (round (* (+ time
-									    (timing-offset server)
-									    (link-offset server)
-									    (latency server)
-									    osc::+unix-epoch+)
-									 sc-osc::+2^32+))))))
+		      (sc-osc::encode-bundle lists-of-messages (round (* (+ time (host-offset server) (latency server)) sc-osc::+2^32+))))))
     (cffi:with-pointer-to-vector-data (msg encode-msg)
       (world-send-packet (sc-world server) (length encode-msg) msg (cffi:foreign-symbol-pointer "sc_lisp_reply_func")))))
 
