@@ -60,18 +60,18 @@
   (stop)
   (if flag (progn
 	     (link-enable (sc-extensions:bpm))
-	     (setf (link-offset *s*) (sync-timeoffset))
 	     (pushnew #'link-set-tempo sc-extensions::*bpm-functions*)
 	     (pushnew #'link-disable  *server-quit-hooks*)
-	     (set-clock (make-instance 'sc::link-clock
-			  :name "Link"
-			  :server *s*
-			  :timestamp #'link-get-time
-			  :bpm (link-get-tempo)
-			  :time-sync-p nil))
+	     (let* ((clock (make-instance 'sc::link-clock
+			     :name "Link"
+			     :server *s*
+			     :timestamp #'link-get-time
+			     :bpm (link-get-tempo)
+			     :time-sync-p nil)))
+	       (setf (timing-offset clock) (sync-timeoffset))
+	       (set-clock clock))
 	     (sc-extensions:bpm (link-get-tempo)))
     (progn
-      (setf (link-offset *s*) 0)
       (set-clock (make-instance 'sc::tempo-clock
 		   :name (sc::name *s*)
 		   :server *s*

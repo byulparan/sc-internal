@@ -6,8 +6,7 @@
   ((sc-world :initform nil :accessor sc-world)
    (sc-buffer :initform nil :accessor sc-buffer)
    (sc-reply-thread :initform nil :accessor sc-reply-thread)
-   (reply-handle-table :initform (make-hash-table :test #'equal) :reader reply-handle-table)
-   (link-offset :initform 0 :accessor link-offset)))
+   (reply-handle-table :initform (make-hash-table :test #'equal) :reader reply-handle-table)))
 
 (defmethod is-local-p ((server internal-server))
   t)
@@ -100,7 +99,7 @@
 (defmethod send-bundle ((server internal-server) time lists-of-messages)
   (let* ((encode-msg (#-lispworks progn
 		      #+lispworks sys:in-static-area
-		      (sc-osc::encode-bundle lists-of-messages (round (* (+ time (link-offset server) (latency server)) sc-osc::+2^32+))))))
+		      (sc-osc::encode-bundle lists-of-messages (round (* (+ time (latency server)) sc-osc::+2^32+))))))
     (cffi:with-pointer-to-vector-data (msg encode-msg)
       (world-send-packet (sc-world server) (length encode-msg) msg (cffi:foreign-symbol-pointer "sc_lisp_reply_func")))))
 
