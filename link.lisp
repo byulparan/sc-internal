@@ -64,10 +64,11 @@
 	     (pushnew #'link-set-tempo sc-extensions::*bpm-functions*)
 	     (pushnew #'link-disable  *server-quit-hooks*)
 	     (set-clock (make-instance 'sc::link-clock
-			  :name "LinkClock"
+			  :name "Link"
 			  :server *s*
 			  :timestamp #'link-get-time
-			  :bpm (link-get-tempo)))
+			  :bpm (link-get-tempo)
+			  :time-sync-p nil))
 	     (sc-extensions:bpm (link-get-tempo)))
     (progn
       (setf (link-offset *s*) 0)
@@ -75,7 +76,8 @@
 		   :name (sc::name *s*)
 		   :server *s*
 		   :timestamp #'core-audio-time
-		   :bpm (sc-extensions:bpm)))
+		   :bpm (sc-extensions:bpm)
+		   :time-sync-p nil))
       (alexandria::removef sc-extensions::*bpm-functions* #'link-set-tempo)
       (alexandria:removef *server-quit-hooks* #'link-disable)
       (link-disable))))

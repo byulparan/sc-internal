@@ -86,7 +86,8 @@
 	(tempo-clock rt-server) (make-instance 'tempo-clock
 				  :name (name rt-server)
 				  :server rt-server
-				  :timestamp #'core-audio-time)))
+				  :timestamp #'core-audio-time
+				  :time-sync-p nil)))
 
 
 (defmethod send-message ((server internal-server) &rest msg)
